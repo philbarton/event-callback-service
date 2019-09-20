@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	demo.PeekQueue()
+	demo.ReadWrite()
 }
