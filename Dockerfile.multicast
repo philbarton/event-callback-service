@@ -1,0 +1,20 @@
+FROM golang:1.13 AS builder
+
+ENV GOPATH=
+ENV GOROOT=
+
+COPY . ./
+
+RUN go get all
+# build and ensure binary is fully linked
+RUN CGO_ENABLED=0 go build -v -o /go/bin ./...
+
+FROM alpine
+
+COPY --from=builder /go/bin/event-multicast /go/bin/event-multicast
+
+WORKDIR /go/bin
+
+USER 1000
+
+CMD ["./event-multicast"]

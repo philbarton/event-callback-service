@@ -28,4 +28,5 @@ func PeekQueue() {
 		bytes, _ := base64.URLEncoding.DecodeString(message.Text)
 		fmt.Println(string(bytes))
 	}
+
 }

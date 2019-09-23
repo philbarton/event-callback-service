@@ -1,18 +1,24 @@
 package demo
 
 import (
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"log"
+	"strconv"
+	"strings"
 )
 
 func ReadWrite() {
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Profile:           "philbart",
-	}))
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("eu-west-2"),
+	})
+
+	if err != nil {
+		log.Println("Failed to establish session", err)
+		return
+	}
 
 	svc := sqs.New(sess)
 
@@ -21,7 +27,7 @@ func ReadWrite() {
 	})
 
 	if err != nil {
-		fmt.Println("URL Error", err)
+		log.Println("Failed to get event queue", err)
 		return
 	}
 
@@ -30,59 +36,68 @@ func ReadWrite() {
 	})
 
 	if err != nil {
-		fmt.Println("URL Error", err)
+		log.Println("Failed to get callback queue", err)
 		return
 	}
 
-	result, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
-		AttributeNames: []*string{
-			aws.String(sqs.MessageSystemAttributeNameSentTimestamp),
-		},
-		MessageAttributeNames: []*string{
-			aws.String(sqs.QueueAttributeNameAll),
-		},
-		QueueUrl:            eventURL.QueueUrl,
-		MaxNumberOfMessages: aws.Int64(1),
-		VisibilityTimeout:   aws.Int64(20), // 20 seconds
-		WaitTimeSeconds:     aws.Int64(0),
-	})
+	for {
 
-	if err != nil {
-		fmt.Println("Error", err)
-		return
-	}
-
-	if len(result.Messages) == 0 {
-		fmt.Println("Received no messages")
-		return
-	}
-
-	for _, message := range result.Messages {
-		fmt.Println(message.Body)
-
-		result, err := svc.SendMessage(&sqs.SendMessageInput{
-			DelaySeconds: aws.Int64(10),
-			MessageBody:  message.Body,
-			QueueUrl:     callbackURL.QueueUrl,
+		result, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
+			AttributeNames: []*string{
+				aws.String(sqs.MessageSystemAttributeNameSentTimestamp),
+			},
+			MessageAttributeNames: []*string{
+				aws.String(sqs.QueueAttributeNameAll),
+			},
+			QueueUrl:            eventURL.QueueUrl,
+			MaxNumberOfMessages: aws.Int64(1),
+			VisibilityTimeout:   aws.Int64(20), // 20 seconds
+			WaitTimeSeconds:     aws.Int64(10), // Long poll
 		})
 
 		if err != nil {
-			fmt.Println("Error", err)
-			return
+			log.Println("Error receiving message ", err)
+			continue
 		}
 
-		fmt.Println("Success", *result.MessageId)
+		for _, message := range result.Messages {
+			log.Println(message.Body)
 
-		resultDelete, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
-			QueueUrl:      eventURL.QueueUrl,
-			ReceiptHandle: message.ReceiptHandle,
-		})
+			for i := range [2]int{} { // simulate multiple consumers
 
-		if err != nil {
-			fmt.Println("Delete Error", err)
-			return
+				log.Println(i)
+				var sb strings.Builder
+				sb.WriteString(*message.Body)
+				sb.WriteString(" ")
+				sb.WriteString(strconv.Itoa(i))
+
+				newMessage := sb.String()
+
+				result, err := svc.SendMessage(&sqs.SendMessageInput{
+					DelaySeconds: aws.Int64(10),
+					MessageBody:  &newMessage,
+					QueueUrl:     callbackURL.QueueUrl,
+				})
+
+				if err != nil {
+					log.Println("Error sending", err)
+					continue
+				}
+
+				log.Println("Success", *result.MessageId)
+
+				resultDelete, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
+					QueueUrl:      eventURL.QueueUrl,
+					ReceiptHandle: message.ReceiptHandle,
+				})
+
+				if err != nil {
+					log.Println("Delete Error....would be a duplicate!", err)
+					continue
+				}
+
+				log.Println("Message Deleted", resultDelete)
+			}
 		}
-
-		fmt.Println("Message Deleted", resultDelete)
 	}
 }

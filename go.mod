@@ -1,6 +1,6 @@
 module philbarton/event-callback-service
 
-go 1.12
+go 1.13
 
 require (
 	github.com/Azure/azure-sdk-for-go v33.4.0+incompatible
