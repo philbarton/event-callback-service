@@ -1,0 +1,40 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    downscaler/uptime: Mon-Fri 08:00-18:00 Europe/London
+  name: event-multicast
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: event-multicast
+    spec:
+      volumes:
+        - name: event-configmap-volume
+          configMap:
+            name: event-configmap
+      containers:
+        - name: event-multicast
+          image: becsrepo.azurecr.io/event-multicast
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_secret
+            - name: EVENT_DIR
+              value: /etc/events
+          volumeMounts:
+            - name: event-configmap-volume
+              mountPath: /etc/events

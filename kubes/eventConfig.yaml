@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-configmap
+data:
+  trigger_1: |
+    https://subscriber1/callback
+    https://subscriber2/callback
+  trigger_2: |
+    https://subscriber1/callback
+    https://subscriber3/callback

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func ReadWrite() {
+func ReadWrite(events map[string][]string) {
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-west-2"),
@@ -62,10 +62,22 @@ func ReadWrite() {
 
 		for _, message := range result.Messages {
 			log.Println(message.Body)
+			log.Println(message.MessageAttributes)
 
-			for i := range [2]int{} { // simulate multiple consumers
+			eventName := message.MessageAttributes["eventName"]
 
+			if eventName == nil {
+				log.Println("No eventName message attribute - ignoring")
+				continue
+			}
+
+			event := eventName.StringValue
+			targets := events[*event]
+
+			for i, target := range targets {
+				log.Println(target)
 				log.Println(i)
+
 				var sb strings.Builder
 				sb.WriteString(*message.Body)
 				sb.WriteString(" ")
@@ -75,8 +87,14 @@ func ReadWrite() {
 
 				result, err := svc.SendMessage(&sqs.SendMessageInput{
 					DelaySeconds: aws.Int64(10),
-					MessageBody:  &newMessage,
-					QueueUrl:     callbackURL.QueueUrl,
+					MessageAttributes: map[string]*sqs.MessageAttributeValue{
+						"target": {
+							DataType:    aws.String("String"),
+							StringValue: aws.String(target),
+						},
+					},
+					MessageBody: &newMessage,
+					QueueUrl:    callbackURL.QueueUrl,
 				})
 
 				if err != nil {
