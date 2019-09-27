@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"philbarton/event-callback-service/pkg/common"
-	"philbarton/event-callback-service/pkg/multicast"
+	"philbarton/event-callback-service/pkg/receiver"
 )
 
 func main() {
+	log.Println("event-receiver")
 
 	events, err := common.GetEvents()
 	if err != nil {
@@ -23,17 +25,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	callbackQueue, err := common.GetQueue(svc, "callback")
-	if err != nil {
-		log.Fatal(err)
+	receive := receiver.Receiver{
+		Svc:        svc,
+		EventQueue: eventQueue,
+		Events:     events,
 	}
 
-	multicaster := multicast.Multicaster{
-		Svc:           svc,
-		EventQueue:    eventQueue,
-		CallbackQueue: callbackQueue,
-		Events:        events,
-	}
-
-	multicaster.ReceiveAndSend()
+	mux := http.NewServeMux()
+	mux.Handle("/event", http.HandlerFunc(receive.ReceiveEvent))
+	log.Fatal(http.ListenAndServe("localhost:8090", mux))
 }
