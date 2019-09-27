@@ -10,10 +10,12 @@ RUN CGO_ENABLED=0 go build -v -o /go/bin ./...
 
 FROM alpine
 
-COPY --from=builder /go/bin/event-multicast /go/bin/event-multicast
+COPY --from=builder /go/bin/event-receiver /go/bin/event-receiver
 
 WORKDIR /go/bin
 
 USER 1000
 
-CMD ["./event-multicast"]
+EXPOSE 8090
+
+CMD ["./event-receiver"]

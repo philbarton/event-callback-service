@@ -17,9 +17,32 @@ spec:
           configMap:
             name: event-configmap
       containers:
+        - name: event-receiver
+          image: event-receiver:latest
+          imagePullPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+          ports:
+            - containerPort: 8080
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_secret
+            - name: EVENT_DIR
+              value: /etc/events
+          volumeMounts:
+            - name: event-configmap-volume
+              mountPath: /etc/events
         - name: event-multicast
-          image: becsrepo.azurecr.io/event-multicast
-          imagePullPolicy: Always
+          image: event-multicast:latest
+          imagePullPolicy: Never
           securityContext:
             runAsNonRoot: true
           env:

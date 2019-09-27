@@ -43,7 +43,7 @@ func (r Receiver) ReceiveEvent(w http.ResponseWriter, req *http.Request) {
 
 		bodyString := string(body)
 
-		_, err := r.Svc.SendMessage(&sqs.SendMessageInput{
+		result, err := r.Svc.SendMessage(&sqs.SendMessageInput{
 			DelaySeconds:      aws.Int64(10),
 			MessageAttributes: attributes,
 			MessageBody:       &bodyString,
@@ -55,6 +55,7 @@ func (r Receiver) ReceiveEvent(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(500)
 			return
 		}
+		log.Printf("wrote %s\n", *result.MessageId)
 
 		w.WriteHeader(202)
 	}

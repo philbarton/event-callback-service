@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	log.Println("event-receiver")
 
 	events, err := common.GetEvents()
 	if err != nil {
@@ -32,6 +31,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	log.Println("begin receive")
 	mux.Handle("/event", http.HandlerFunc(receive.ReceiveEvent))
-	log.Fatal(http.ListenAndServe("localhost:8090", mux))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", mux))
 }

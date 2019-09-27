@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"log"
 )
 
 func GetSqsService() (*sqs.SQS, error) {
@@ -16,6 +17,8 @@ func GetSqsService() (*sqs.SQS, error) {
 		return nil, fmt.Errorf("create session, region is %s : %v", region, err)
 	}
 	svc := sqs.New(sess)
+
+	log.Println("got sqs service")
 	return svc, err
 }
 
@@ -26,5 +29,6 @@ func GetQueue(svc *sqs.SQS, queueName string) (*sqs.GetQueueUrlOutput, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get %s queue: %v", queueName, err)
 	}
+	log.Printf("got %s queue\n", queueName)
 	return eventQueue, nil
 }

@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 )
@@ -30,5 +31,6 @@ func GetEvents() (map[string][]string, error) {
 		events[file.Name()] = lines[:len(lines)-1] // last element is always empty
 	}
 
+	log.Println("loaded events")
 	return events, nil
 }

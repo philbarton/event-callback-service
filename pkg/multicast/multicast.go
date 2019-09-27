@@ -16,6 +16,8 @@ type Multicaster struct {
 
 func (m Multicaster) ReceiveAndSend() {
 
+	log.Println("begin receive and send")
+
 	for {
 
 		result, err := m.Svc.ReceiveMessage(&sqs.ReceiveMessageInput{
@@ -38,6 +40,8 @@ func (m Multicaster) ReceiveAndSend() {
 
 		for _, message := range result.Messages {
 
+			log.Printf("Read %s\n", *message.MessageId)
+
 			eventName := message.MessageAttributes["eventName"]
 
 			if eventName == nil {
@@ -59,7 +63,7 @@ func (m Multicaster) ReceiveAndSend() {
 				queue := m.CallbackQueue
 				body := message.Body
 
-				_, err := m.Svc.SendMessage(&sqs.SendMessageInput{
+				result, err := m.Svc.SendMessage(&sqs.SendMessageInput{
 					DelaySeconds:      aws.Int64(10),
 					MessageAttributes: attributes,
 					MessageBody:       body,
@@ -70,6 +74,7 @@ func (m Multicaster) ReceiveAndSend() {
 					log.Println(fmt.Errorf("sending message to %s : %v", queue.String(), err))
 					continue
 				}
+				log.Printf("wrote %s\n", *result.MessageId)
 
 				_, err = m.Svc.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      m.EventQueue.QueueUrl,
