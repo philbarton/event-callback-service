@@ -1,0 +1,19 @@
+FROM golang:1.13 AS builder
+
+ENV GOPATH=
+ENV GOROOT=
+
+COPY . ./
+
+# build and ensure binary is fully linked
+RUN CGO_ENABLED=0 go build -v -o /go/bin ./...
+
+FROM alpine
+
+COPY --from=builder /go/bin/callback-sender /go/bin/callback-sender
+
+WORKDIR /go/bin
+
+USER 1000
+
+CMD ["./callback-sender"]

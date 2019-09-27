@@ -8,6 +8,8 @@ import (
 	"log"
 )
 
+const Poll = 10
+
 func GetSqsService() (*sqs.SQS, error) {
 	region := "eu-west-2"
 	sess, err := session.NewSession(&aws.Config{

@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"log"
+	"philbarton/event-callback-service/pkg/common"
 )
 
 type Multicaster struct {
@@ -28,9 +29,9 @@ func (m Multicaster) ReceiveAndSend() {
 				aws.String(sqs.QueueAttributeNameAll),
 			},
 			QueueUrl:            m.EventQueue.QueueUrl,
-			MaxNumberOfMessages: aws.Int64(1),
-			VisibilityTimeout:   aws.Int64(20), // 20 seconds
-			WaitTimeSeconds:     aws.Int64(10), // Long poll
+			MaxNumberOfMessages: aws.Int64(10),
+			VisibilityTimeout:   aws.Int64(20),          // 20 seconds
+			WaitTimeSeconds:     aws.Int64(common.Poll), // Long poll
 		})
 
 		if err != nil {

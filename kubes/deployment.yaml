@@ -61,3 +61,19 @@ spec:
           volumeMounts:
             - name: event-configmap-volume
               mountPath: /etc/events
+        - name: callback-sender
+          image: callback-sender:latest
+          imagePullPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_secret
