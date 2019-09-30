@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-const Poll = 10
+const Poll = 2
 
 func GetSqsService() (*sqs.SQS, error) {
 	region := "eu-west-2"

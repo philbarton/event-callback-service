@@ -5,8 +5,8 @@ metadata:
   name: event-configmap
 data:
   trigger_1: |
-    https://subscriber1/callback
-    https://subscriber2/callback
+    http://httpbin.org/post
+    http://httpbin.org/post
   trigger_2: |
-    https://subscriber1/callback
-    https://subscriber3/callback
+    http://httpbin.org/post
+    http://httpbin.org/post

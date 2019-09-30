@@ -65,7 +65,6 @@ func (m Multicaster) ReceiveAndSend() {
 				body := message.Body
 
 				result, err := m.Svc.SendMessage(&sqs.SendMessageInput{
-					DelaySeconds:      aws.Int64(10),
 					MessageAttributes: attributes,
 					MessageBody:       body,
 					QueueUrl:          queue.QueueUrl,

@@ -23,7 +23,12 @@ func (r Receiver) ReceiveEvent(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO : check that event is in configured events
+	targets := r.Events[eventType[0]]
+	if targets == nil {
+		log.Println(fmt.Errorf("event not registered %s", eventType[0]))
+		w.WriteHeader(400)
+		return
+	}
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -44,7 +49,6 @@ func (r Receiver) ReceiveEvent(w http.ResponseWriter, req *http.Request) {
 		bodyString := string(body)
 
 		result, err := r.Svc.SendMessage(&sqs.SendMessageInput{
-			DelaySeconds:      aws.Int64(10),
 			MessageAttributes: attributes,
 			MessageBody:       &bodyString,
 			QueueUrl:          queue.QueueUrl,

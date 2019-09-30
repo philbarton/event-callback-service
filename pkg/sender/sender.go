@@ -1,10 +1,12 @@
 package sender
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"log"
+	"net/http"
 	"philbarton/event-callback-service/pkg/common"
 )
 
@@ -74,14 +76,14 @@ func (s Sender) SendCallback() {
 func callback(targetText string, body string) error {
 	log.Printf("Target %s\n", targetText)
 	log.Printf("Body %s\n", body)
-	/*
-		response, err := http.Post(targetText, "text/plain", bytes.NewBufferString(body))
 
-		if err != nil {
-			return err
-		}
+	response, err := http.Post(targetText, "text/plain", bytes.NewBufferString(body))
 
-		log.Println(response.Status)
-	*/
+	if err != nil {
+		return fmt.Errorf("callback : %v", err)
+	}
+
+	log.Println(response.Status)
+
 	return nil
 }
