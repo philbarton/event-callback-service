@@ -33,5 +33,6 @@ func main() {
 	mux := http.NewServeMux()
 	log.Println("begin receive")
 	mux.Handle("/event", http.HandlerFunc(receive.ReceiveEvent))
+	mux.Handle("/healthz", http.HandlerFunc(receive.Health))
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", mux))
 }

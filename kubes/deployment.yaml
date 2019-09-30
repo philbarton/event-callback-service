@@ -19,6 +19,12 @@ spec:
       containers:
         - name: event-receiver
           image: event-receiver:latest
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 60
           imagePullPolicy: Never
           securityContext:
             runAsNonRoot: true

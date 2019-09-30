@@ -64,3 +64,20 @@ func (r Receiver) ReceiveEvent(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(202)
 	}
 }
+
+func (r Receiver) Health(w http.ResponseWriter, req *http.Request) {
+
+	_, err := r.Svc.GetQueueAttributes(&sqs.GetQueueAttributesInput{
+		QueueUrl: r.EventQueue.QueueUrl,
+		AttributeNames: []*string{
+			aws.String("ApproximateNumberOfMessages"),
+		},
+	})
+
+	if err != nil {
+		log.Println(fmt.Errorf("health check failed : %v", err))
+		w.WriteHeader(400)
+	} else {
+		w.WriteHeader(200)
+	}
+}
