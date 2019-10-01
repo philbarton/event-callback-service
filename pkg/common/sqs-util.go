@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"log"
@@ -10,10 +11,13 @@ import (
 
 const Poll = 2
 
-func GetSqsService() (*sqs.SQS, error) {
+func GetSqsService(queueCredentials *credentials.Credentials) (*sqs.SQS, error) {
+
 	region := "eu-west-2"
+
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region),
+		Region:      aws.String(region),
+		Credentials: queueCredentials,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create session, region is %s : %v", region, err)

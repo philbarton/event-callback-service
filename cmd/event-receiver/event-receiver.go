@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"log"
 	"net/http"
+	"os"
 	"philbarton/event-callback-service/pkg/common"
 	"philbarton/event-callback-service/pkg/receiver"
 )
@@ -14,18 +16,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	svc, err := common.GetSqsService()
+	eventQueueCredentials := credentials.NewStaticCredentials(
+		os.Getenv("EVENT_AWS_ACCESS_KEY_ID"),
+		os.Getenv("EVENT_AWS_SECRET_ACCESS_KEY"),
+		"")
+
+	eventQueueSvc, err := common.GetSqsService(eventQueueCredentials)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	eventQueue, err := common.GetQueue(svc, "event")
+	eventQueue, err := common.GetQueue(eventQueueSvc, "event")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	receive := receiver.Receiver{
-		Svc:        svc,
+		Svc:        eventQueueSvc,
 		EventQueue: eventQueue,
 		Events:     events,
 	}

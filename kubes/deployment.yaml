@@ -31,12 +31,12 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: AWS_ACCESS_KEY_ID
+            - name: EVENT_AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret
                   key: aws_key
-            - name: AWS_SECRET_ACCESS_KEY
+            - name: EVENT_AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret
@@ -52,12 +52,22 @@ spec:
           securityContext:
             runAsNonRoot: true
           env:
-            - name: AWS_ACCESS_KEY_ID
+            - name: EVENT_AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret
                   key: aws_key
-            - name: AWS_SECRET_ACCESS_KEY
+            - name: EVENT_AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_secret
+            - name: CALLBACK_AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ecs-secret
+                  key: aws_key
+            - name: CALLBACK_AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret
@@ -73,12 +83,12 @@ spec:
           securityContext:
             runAsNonRoot: true
           env:
-            - name: AWS_ACCESS_KEY_ID
+            - name: CALLBACK_AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret
                   key: aws_key
-            - name: AWS_SECRET_ACCESS_KEY
+            - name: CALLBACK_AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: ecs-secret

@@ -9,7 +9,8 @@ import (
 )
 
 type Multicaster struct {
-	Svc           *sqs.SQS
+	EventSvc      *sqs.SQS
+	CallbackSvc   *sqs.SQS
 	EventQueue    *sqs.GetQueueUrlOutput
 	CallbackQueue *sqs.GetQueueUrlOutput
 	Events        map[string][]string
@@ -21,7 +22,7 @@ func (m Multicaster) ReceiveAndSend() {
 
 	for {
 
-		result, err := m.Svc.ReceiveMessage(&sqs.ReceiveMessageInput{
+		result, err := m.EventSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
 			AttributeNames: []*string{
 				aws.String(sqs.MessageSystemAttributeNameSentTimestamp),
 			},
@@ -64,7 +65,7 @@ func (m Multicaster) ReceiveAndSend() {
 				queue := m.CallbackQueue
 				body := message.Body
 
-				result, err := m.Svc.SendMessage(&sqs.SendMessageInput{
+				result, err := m.CallbackSvc.SendMessage(&sqs.SendMessageInput{
 					MessageAttributes: attributes,
 					MessageBody:       body,
 					QueueUrl:          queue.QueueUrl,
@@ -76,7 +77,7 @@ func (m Multicaster) ReceiveAndSend() {
 				}
 				log.Printf("wrote %s\n", *result.MessageId)
 
-				_, err = m.Svc.DeleteMessage(&sqs.DeleteMessageInput{
+				_, err = m.EventSvc.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      m.EventQueue.QueueUrl,
 					ReceiptHandle: message.ReceiptHandle,
 				})
